@@ -1,0 +1,30 @@
+# Environnement
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Airflow
+airflow/logs/*
+!airflow/logs/.gitkeep
+
+# Data (jamais commiter des donnees, meme simulees, si volumineuses)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# MLflow local (si jamais utilise en fallback hors Docker)
+mlruns/
+mlartifacts/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
