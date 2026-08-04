@@ -21,19 +21,43 @@ import config
 
 def _daily_volumes(rng: np.random.Generator) -> pd.DataFrame:
     dates = pd.date_range(config.START_DATE, config.END_DATE, freq="D")
+    n = len(dates)
+
     dow_w = np.array([config.DOW_WEIGHTS[d.weekday()] for d in dates])
     month_w = np.array([config.MONTH_WEIGHTS[d.month] for d in dates])
     holiday_w = np.array([config.HOLIDAYS.get(d.date(), 1.0) for d in dates])
-    noise = rng.normal(1.0, 0.06, size=len(dates))
-    expected = config.TARGET_DAILY_CALLS * dow_w * month_w * holiday_w * noise
+
+    # linear growth trend across the window
+    trend = 1.0 + np.linspace(0, config.TREND_GROWTH, n)
+
+    # autocorrelated noise (AR(1)) instead of pure iid noise
+    eps = rng.normal(0, config.DAILY_NOISE_STD, size=n)
+    noise = np.zeros(n)
+    noise[0] = eps[0]
+    for t in range(1, n):
+        noise[t] = config.NOISE_AUTOCORR * noise[t - 1] + eps[t]
+    noise = 1.0 + noise
+
+    # random spike/dip anomaly days
+    anomaly = np.ones(n)
+    is_anomaly = rng.random(n) < config.ANOMALY_PROB
+    for i in np.where(is_anomaly)[0]:
+        if rng.random() < 0.5:
+            anomaly[i] = rng.uniform(*config.ANOMALY_SPIKE_RANGE)
+        else:
+            anomaly[i] = rng.uniform(*config.ANOMALY_DIP_RANGE)
+
+    expected = config.TARGET_DAILY_CALLS * dow_w * month_w * holiday_w * trend * noise * anomaly
     expected = np.clip(expected, a_min=20, a_max=None)
     volumes = rng.poisson(expected)
-    return pd.DataFrame({"date": dates, "volume": volumes})
+    return pd.DataFrame({"date": dates, "volume": volumes, "is_anomaly": is_anomaly})
 
 
-def _hour_distribution():
+def _hour_distribution(rng: np.random.Generator):
     hours = np.array(sorted(config.HOURLY_WEIGHTS.keys()))
-    weights = np.array([config.HOURLY_WEIGHTS[h] for h in hours])
+    base_weights = np.array([config.HOURLY_WEIGHTS[h] for h in hours])
+    jitter = rng.uniform(1 - config.HOURLY_JITTER, 1 + config.HOURLY_JITTER, size=len(hours))
+    weights = np.clip(base_weights * jitter, 0.05, None)
     return hours, weights / weights.sum()
 
 
@@ -54,7 +78,7 @@ def generate_call_events(
     skill_weights = np.array([s["weight"] for s in config.SKILLS])
     skill_weights = skill_weights / skill_weights.sum()
 
-    hours, hour_probs = _hour_distribution()
+    hours = np.array(sorted(config.HOURLY_WEIGHTS.keys()))
     skill_to_agents = _skill_to_agents_map(agent_skills)
 
     hire_dates = agents.set_index("agent_id")["hire_date"]
@@ -78,6 +102,7 @@ def generate_call_events(
             continue
         the_date = date_ts.date()
 
+        _, hour_probs = _hour_distribution(rng)
         hour_counts = rng.multinomial(day_volume, hour_probs)
         rep_hours = np.repeat(hours, hour_counts)
         seconds_offsets = rng.integers(0, 3600, size=day_volume)

@@ -176,7 +176,7 @@ All experiments (forecasting and attrition) are tracked in MLflow: parameters, m
 ## Roadmap
 
 - [x] Infrastructure setup (Postgres, MinIO, Airflow, MLflow, Docker Compose)
-- [ ] Data simulator + ingestion DAG
+- [x] Data simulator + ingestion DAG
 - [ ] Forecasting models (Prophet, SARIMA, walk-forward validation)
 - [ ] Attrition model (XGBoost, SHAP)
 - [ ] Scheduling optimization (Erlang C, OR-Tools)
