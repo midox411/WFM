@@ -98,6 +98,12 @@ services:
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+      # Used by dag_ingestion.py to reach Postgres (wfm_app db) and MinIO
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_APP_DB: ${POSTGRES_APP_DB}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     entrypoint: /bin/bash
     command:
       - -c
@@ -114,6 +120,8 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
+      - ./data/simulator:/opt/airflow/data_simulator
+      - ./data/raw:/opt/airflow/data_raw
     networks:
       - wfm_net
 
@@ -133,6 +141,8 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
+      - ./data/simulator:/opt/airflow/data_simulator
+      - ./data/raw:/opt/airflow/data_raw
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 15s
@@ -155,6 +165,8 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
+      - ./data/simulator:/opt/airflow/data_simulator
+      - ./data/raw:/opt/airflow/data_raw
     networks:
       - wfm_net
 
