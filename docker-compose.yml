@@ -80,6 +80,7 @@ services:
       --default-artifact-root s3://mlflow-artifacts/
       --host 0.0.0.0
       --port 5000
+      --allowed-hosts "mlflow:*,localhost:*,127.0.0.1:*"
     ports:
       - "${MLFLOW_PORT}:5000"
     networks:
@@ -126,6 +127,7 @@ services:
       - ./data/simulator:/opt/airflow/data_simulator
       - ./data/raw:/opt/airflow/data_raw
       - ./spark_jobs:/opt/airflow/spark_jobs
+      - ./ml/forecasting:/opt/airflow/ml_forecasting
       - ./data/raw:/opt/wfm_data/raw
       - wfm_processed_data:/opt/wfm_data/processed
     networks:
@@ -151,6 +153,7 @@ services:
       - ./data/simulator:/opt/airflow/data_simulator
       - ./data/raw:/opt/airflow/data_raw
       - ./spark_jobs:/opt/airflow/spark_jobs
+      - ./ml/forecasting:/opt/airflow/ml_forecasting
       - ./data/raw:/opt/wfm_data/raw
       - wfm_processed_data:/opt/wfm_data/processed
     healthcheck:
@@ -179,6 +182,7 @@ services:
       - ./data/simulator:/opt/airflow/data_simulator
       - ./data/raw:/opt/airflow/data_raw
       - ./spark_jobs:/opt/airflow/spark_jobs
+      - ./ml/forecasting:/opt/airflow/ml_forecasting
       - ./data/raw:/opt/wfm_data/raw
       - wfm_processed_data:/opt/wfm_data/processed
     networks:

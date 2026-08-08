@@ -8,3 +8,7 @@ faker
 pyarrow
 sqlalchemy
 pyspark==3.5.1
+mlflow
+statsmodels
+prophet
+pyopenssl>=24.2.1
