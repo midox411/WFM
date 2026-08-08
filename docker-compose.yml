@@ -89,9 +89,12 @@ services:
     build:
       context: ./docker/airflow
     container_name: wfm_airflow_init
+    user: root
     depends_on:
       postgres:
         condition: service_healthy
+      processed-data-init:
+        condition: service_completed_successfully
     environment: &airflow_env
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/airflow
@@ -122,6 +125,9 @@ services:
       - ./airflow/plugins:/opt/airflow/plugins
       - ./data/simulator:/opt/airflow/data_simulator
       - ./data/raw:/opt/airflow/data_raw
+      - ./spark_jobs:/opt/airflow/spark_jobs
+      - ./data/raw:/opt/wfm_data/raw
+      - wfm_processed_data:/opt/wfm_data/processed
     networks:
       - wfm_net
 
@@ -130,6 +136,7 @@ services:
       context: ./docker/airflow
     container_name: wfm_airflow_web
     restart: unless-stopped
+    user: root
     depends_on:
       airflow-init:
         condition: service_completed_successfully
@@ -143,6 +150,9 @@ services:
       - ./airflow/plugins:/opt/airflow/plugins
       - ./data/simulator:/opt/airflow/data_simulator
       - ./data/raw:/opt/airflow/data_raw
+      - ./spark_jobs:/opt/airflow/spark_jobs
+      - ./data/raw:/opt/wfm_data/raw
+      - wfm_processed_data:/opt/wfm_data/processed
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 15s
@@ -156,6 +166,7 @@ services:
       context: ./docker/airflow
     container_name: wfm_airflow_scheduler
     restart: unless-stopped
+    user: root
     depends_on:
       airflow-init:
         condition: service_completed_successfully
@@ -167,6 +178,50 @@ services:
       - ./airflow/plugins:/opt/airflow/plugins
       - ./data/simulator:/opt/airflow/data_simulator
       - ./data/raw:/opt/airflow/data_raw
+      - ./spark_jobs:/opt/airflow/spark_jobs
+      - ./data/raw:/opt/wfm_data/raw
+      - wfm_processed_data:/opt/wfm_data/processed
+    networks:
+      - wfm_net
+
+  processed-data-init:
+    image: busybox
+    container_name: wfm_processed_init
+    volumes:
+      - wfm_processed_data:/opt/wfm_data/processed
+    command: ["sh", "-c", "chmod -R 777 /opt/wfm_data/processed"]
+    networks:
+      - wfm_net
+
+  spark-master:
+    image: apache/spark:3.5.1-python3
+    container_name: wfm_spark_master
+    restart: unless-stopped
+    user: root
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master"]
+    ports:
+      - "7077:7077"
+      - "8090:8080"
+    volumes:
+      - ./data/raw:/opt/wfm_data/raw
+      - wfm_processed_data:/opt/wfm_data/processed
+    networks:
+      - wfm_net
+
+  spark-worker:
+    image: apache/spark:3.5.1-python3
+    container_name: wfm_spark_worker
+    restart: unless-stopped
+    user: root
+    depends_on:
+      - spark-master
+      - processed-data-init
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
+    ports:
+      - "8091:8081"
+    volumes:
+      - ./data/raw:/opt/wfm_data/raw
+      - wfm_processed_data:/opt/wfm_data/processed
     networks:
       - wfm_net
 
@@ -179,3 +234,5 @@ volumes:
     name: wfm_pg_data
   wfm_minio_data:
     name: wfm_minio_data
+  wfm_processed_data:
+    name: wfm_processed_data
