@@ -32,10 +32,28 @@ def generate_agents(rng: np.random.Generator) -> pd.DataFrame:
         p_senior = min(0.85, 0.15 + tenure_days / (5 * 365) * 0.7)
         seniority.append("senior" if rng.random() < p_senior else "junior")
 
-    # Attrition: pick which agents terminate, with a termination date somewhere
-    # in the simulated window (so both forecasting and attrition modules have signal)
+    contract_type = rng.choice(
+        ["full_time", "part_time"], size=n, p=[0.85, 0.15]
+    )
+
+    # Attrition: churn risk is weighted by plausible HR factors instead of
+    # picked uniformly at random - otherwise there is literally no real signal
+    # for an attrition model to learn (any "good" metric would only reflect
+    # data leakage, not a genuine pattern). Junior agents, part-time contracts,
+    # and short tenure-at-hire all raise the odds of leaving, with noise on
+    # top so it stays a probabilistic pattern, not a deterministic rule.
+    tenure_at_start_days = np.array([(config.START_DATE - hd).days for hd in hire_dates])
+    short_tenure_factor = np.clip(2.2 - tenure_at_start_days / (2 * 365), 0.6, 2.2)
+
+    risk_weight = np.ones(n)
+    risk_weight *= np.where(np.array(seniority) == "junior", 1.8, 0.8)
+    risk_weight *= np.where(contract_type == "part_time", 2.4, 1.0)
+    risk_weight *= short_tenure_factor
+    risk_weight *= rng.uniform(0.7, 1.3, size=n)  # keep it probabilistic, not deterministic
+    risk_weight /= risk_weight.sum()
+
     n_terminated = int(round(n * config.ATTRITION_RATE))
-    terminated_idx = set(rng.choice(n, size=n_terminated, replace=False).tolist())
+    terminated_idx = set(rng.choice(n, size=n_terminated, replace=False, p=risk_weight).tolist())
 
     window_days = (config.END_DATE - config.START_DATE).days
     status, termination_dates = [], []
@@ -50,9 +68,6 @@ def generate_agents(rng: np.random.Generator) -> pd.DataFrame:
             status.append("active")
             termination_dates.append(pd.NaT)
 
-    contract_type = rng.choice(
-        ["full_time", "part_time"], size=n, p=[0.85, 0.15]
-    )
     team = rng.choice(config.TEAMS, size=n)
 
     base_cost = [
