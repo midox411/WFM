@@ -239,6 +239,26 @@ services:
     networks:
       - wfm_net
 
+  api:
+    build:
+      context: ./api
+    container_name: wfm_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_APP_DB=${POSTGRES_APP_DB}
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    ports:
+      - "8000:8000"
+    volumes:
+      - wfm_processed_data:/opt/wfm_data/processed
+    networks:
+      - wfm_net
+
 networks:
   wfm_net:
     name: wfm_network
