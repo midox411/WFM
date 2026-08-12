@@ -179,7 +179,7 @@ All experiments (forecasting and attrition) are tracked in MLflow: parameters, m
 - [x] Data simulator + ingestion DAG
 - [X] Forecasting models (Prophet, SARIMA, walk-forward validation)
 - [X] Attrition model (XGBoost, SHAP)
-- [ ] Scheduling optimization (Erlang C, OR-Tools)
+- [X] Scheduling optimization (Erlang C, OR-Tools)
 - [ ] FastAPI backend
 - [ ] Dashboard
 - [ ] What-if simulator

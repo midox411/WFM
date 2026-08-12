@@ -133,6 +133,7 @@ services:
       - ./spark_jobs:/opt/airflow/spark_jobs
       - ./ml/forecasting:/opt/airflow/ml_forecasting
       - ./ml/attrition:/opt/airflow/ml_attrition
+      - ./ml/optimization:/opt/airflow/ml_optimization
       - ./data/raw:/opt/wfm_data/raw
       - wfm_processed_data:/opt/wfm_data/processed
     networks:
@@ -160,6 +161,7 @@ services:
       - ./spark_jobs:/opt/airflow/spark_jobs
       - ./ml/forecasting:/opt/airflow/ml_forecasting
       - ./ml/attrition:/opt/airflow/ml_attrition
+      - ./ml/optimization:/opt/airflow/ml_optimization
       - ./data/raw:/opt/wfm_data/raw
       - wfm_processed_data:/opt/wfm_data/processed
     healthcheck:
@@ -190,6 +192,7 @@ services:
       - ./spark_jobs:/opt/airflow/spark_jobs
       - ./ml/forecasting:/opt/airflow/ml_forecasting
       - ./ml/attrition:/opt/airflow/ml_attrition
+      - ./ml/optimization:/opt/airflow/ml_optimization
       - ./data/raw:/opt/wfm_data/raw
       - wfm_processed_data:/opt/wfm_data/processed
     networks:
