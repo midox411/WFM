@@ -6,3 +6,4 @@ sqlalchemy==2.0.20
 psycopg2-binary==2.9.7
 mlflow==2.6.0
 pydantic==2.3.0
+evidently

@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    @apply bg-surface-50 text-neutral-800 font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-200 rounded-full;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl border border-neutral-100 shadow-card p-6 transition-shadow duration-200;
+  }
+  .card:hover {
+    @apply shadow-card-hover;
+  }
+  .skeleton {
+    @apply bg-gradient-to-r from-neutral-100 via-neutral-50 to-neutral-100 rounded-lg animate-pulse;
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-red {
+    @apply badge bg-red-50 text-red-700;
+  }
+  .badge-amber {
+    @apply badge bg-amber-50 text-amber-700;
+  }
+  .badge-green {
+    @apply badge bg-green-50 text-green-700;
+  }
+  .badge-blue {
+    @apply badge bg-accent-50 text-accent-700;
+  }
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-neutral-500 transition-all duration-150 cursor-pointer;
+  }
+  .nav-item:hover {
+    @apply bg-neutral-100 text-neutral-800;
+  }
+  .nav-item.active {
+    @apply bg-accent-50 text-accent-700;
+  }
+  .kpi-card {
+    @apply card flex flex-col gap-1;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-accent-600 text-white text-sm font-medium rounded-lg
+           hover:bg-accent-700 transition-colors duration-150;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-white text-neutral-700 text-sm font-medium rounded-lg
+           border border-neutral-200 hover:bg-neutral-50 transition-colors duration-150;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

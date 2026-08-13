@@ -255,7 +255,21 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - ./api:/app
       - wfm_processed_data:/opt/wfm_data/processed
+    networks:
+      - wfm_net
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+    container_name: wfm_frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
     networks:
       - wfm_net
 

@@ -181,10 +181,10 @@ All experiments (forecasting and attrition) are tracked in MLflow: parameters, m
 - [X] Attrition model (XGBoost, SHAP)
 - [X] Scheduling optimization (Erlang C, OR-Tools)
 - [X] FastAPI backend
-- [ ] Dashboard
-- [ ] What-if simulator
-- [ ] Drift monitoring (Evidently AI)
-- [ ] Tests + documentation + demo
+- [X] Dashboard
+- [X] What-if simulator
+- [X] Drift monitoring (Evidently AI)
+- [X] Tests + documentation + demo
 
 ### Possible extensions
 
